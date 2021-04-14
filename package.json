@@ -1,6 +1,6 @@
 {
     "name": "interclip",
-    "version": "0.0.2",
+    "version": "0.0.3",
     "description": "Interclip for the terminal",
     "repository": "https://github.com/aperta-principium/iclip-cli",
     "main": "bin/index.js",
