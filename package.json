@@ -1,6 +1,6 @@
 {
     "name": "interclip",
-    "version": "0.0.1",
+    "version": "0.0.2",
     "description": "Interclip for the terminal",
     "repository": "https://github.com/aperta-principium/iclip-cli",
     "main": "bin/index.js",
@@ -14,6 +14,8 @@
     "author": "Filip Troníček",
     "license": "MIT",
     "dependencies": {
+        "clipboardy": "^2.3.0",
+        "dashdash": "^2.0.0",
         "figlet": "^1.5.0",
         "node-fetch": "^2.6.1",
         "qrcode-terminal": "^0.12.0",
