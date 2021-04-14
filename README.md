@@ -21,10 +21,14 @@ tasks => https://taskord.com/
 #### iclip --copy (-p)
 Copy the result of the command
 ##### Example command 
-```iclip tasks -p```
+```
+iclip tasks -p
+```
 
 #### iclip --qrcode (-q)
 Display a QR code for the result of your command
 ##### Example command
-```iclip tasks -q```
+```
+iclip tasks -q
+```
 
