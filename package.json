@@ -1,0 +1,23 @@
+{
+    "name": "iclip-cli",
+    "version": "0.0.1",
+    "description": "Interclip for the terminal",
+    "repository": "https://github.com/aperta-principium/iclip-cli",
+    "main": "bin/index.js",
+    "bin": {
+        "iclip": "./bin/index.js"
+    },
+    "preferGlobal": true,
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "author": "Filip Troníček",
+    "license": "MIT",
+    "dependencies": {
+        "clear": "^0.1.0",
+        "figlet": "^1.5.0",
+        "node-fetch": "^2.6.1",
+        "qrcode-terminal": "^0.12.0",
+        "validator": "^13.5.2"
+    }
+}
