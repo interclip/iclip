@@ -49,7 +49,7 @@ if (validator.isURL(argument)) {
         }
     }).then(res => {
         if (res) {
-            console.log(opts.clear ? `${argument} => ${res.result}` : `Code: ${res.result}`);
+            console.log(opts.clear ? `${argument} => ${res.result}` : `Code: ${res.result} ${opts.copy && "(copied)"}`);
             if (opts.qrcode) {
                 qrcode.generate(`https://interclip.app/${res.result}`);
             }
@@ -68,7 +68,7 @@ if (validator.isURL(argument)) {
         }
     }).then(res => {
         if (res) {
-            console.log(opts.clear ? `${argument} => ${res.result}` : `URL: ${res.result}`);
+            console.log(opts.clear ? `${argument} => ${res.result}` : `URL: ${res.result} ${opts.copy && "(copied)"}`);
             if (opts.qrcode) {
                 qrcode.generate(`${argument}`);
             }
