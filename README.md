@@ -48,3 +48,10 @@ Display a QR code for the result of your command
 iclip tasks -q
 ```
 
+#### --endpoint (-e)
+Set a custom endpoint of the Interclip deployment 
+
+##### Example command
+```
+iclip tasks -e https://interclip.app
+```
