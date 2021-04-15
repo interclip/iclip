@@ -27,6 +27,11 @@ const options = [
         type: 'bool',
         help: 'Make the output simple and clear.'
     },
+    {
+        names: ['endpoint', 'e'],
+        type: 'string',
+        help: 'Change the base URL of Interclip.'
+    }
 ];
  
 const parser = dashdash.createParser({options: options});
@@ -37,11 +42,13 @@ try {
     process.exit(1);
 }
 
+const endpoint = opts.endpoint || "https://interclip.app";
+
 !opts.clear && console.log(figlet.textSync(`Interclip`,  {horizontalLayout: 'full'}));
 
-if (validator.isURL(argument)) {
+if (argument && validator.isURL(argument)) {
     !opts.clear && console.log(`Creating clip from ${argument}`);
-    fetch(`https://interclip.app/includes/api?url=${argument}`).then((res) => {
+    fetch(`${endpoint}/includes/api?url=${argument}`).then((res) => {
         if (res.ok) {
             return res.json();
         } else {
@@ -51,16 +58,16 @@ if (validator.isURL(argument)) {
         if (res) {
             console.log(opts.clear ? `${argument} => ${res.result}` : `Code: ${res.result} ${opts.copy && "(copied)"}`);
             if (opts.qrcode) {
-                qrcode.generate(`https://interclip.app/${res.result}`);
+                qrcode.generate(`${endpoint}/${res.result}`);
             }
             opts.copy && clipboardy.writeSync(res.result);
         } else {
             console.log(`Error: ${res}`);
         }
     });
-} else if (argument.length === 5) {
+} else if (argument && argument.length === 5) {
     !opts.clear && console.log(`Getting clip from code ${argument}`);
-    fetch(`https://interclip.app/includes/get-api?code=${argument}`).then((res) => {
+    fetch(`${endpoint}/includes/get-api?code=${argument}`).then((res) => {
         if (res.ok) {
             return res.json();
         } else {
