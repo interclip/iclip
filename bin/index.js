@@ -75,7 +75,7 @@ if (argument && validator.isURL(argument)) {
         }
     }).then(res => {
         if (res) {
-            console.log(opts.clear ? `${argument} => ${res.result}` : `URL: ${res.result} ${opts.copy && "(copied)"}`);
+            console.log(opts.clear ? `${argument} => ${res.result}` : `URL: ${res.result} ${opts.copy ? "(copied)" : ""}`);
             if (opts.qrcode) {
                 qrcode.generate(`${argument}`);
             }
