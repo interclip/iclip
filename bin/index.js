@@ -5,7 +5,8 @@ const validator = require('validator');
 const qrcode = require('qrcode-terminal');
 const dashdash = require('dashdash');
 const clipboardy = require('clipboardy');
-const fs = require('fs')
+const fs = require('fs');
+const FormData = require('form-data');
 
 const fetch = require("node-fetch");
 
@@ -40,7 +41,8 @@ const options = [
     },
 ];
 
-const parser = dashdash.createParser({ options: options });
+const parser = dashdash.createParser({ options });
+
 try {
     var opts = parser.parse(process.argv);
 } catch (e) {
@@ -48,12 +50,55 @@ try {
     process.exit(1);
 }
 
-const endpoint = opts.endpoint || "https://interclip.app";
+const endpoint = opts.endpoint || "https://8080-teal-nightingale-r7f5pbt6.ws-eu13.gitpod.io";
 
 !opts.clear && console.log(figlet.textSync(`Interclip`, { horizontalLayout: 'full' }));
 
 if (argument && fs.existsSync(argument)) {
-    console.log("File!")
+    const formData = new FormData();
+    const buffer = fs.readFileSync(argument);
+
+    formData.append("uploaded_file", buffer, "package.json");
+
+    // Check if the file does not exceed 100MB
+    if (buffer.length > 100000000) {
+        console.log("File is too big!");
+        process.exit(1);
+    } else {
+        // Output the human readable file size
+        console.log(`File size: ${(fs.statSync(argument).size / 1000).toFixed(2)} KB`);
+    }
+
+    // Upload the provided file to Interclip (endpoint: https://interclip.app/upload/)
+    console.log(`Uploading ${argument}... to ${endpoint}/upload/`);
+    fetch(`${endpoint}/upload/?api`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'multipart/form-data'
+        },
+        body: formData
+    }).then(response => {
+        return response.json();
+    }).then(json => {
+        console.log(json);
+        /*
+        const url = json.url;
+
+        console.log(`File uploaded to ${url}`);
+
+        if (opts.qrcode) {
+            qrcode.generate(url, {
+                small: true,
+                quiet: true
+            });
+        }
+
+        if (opts.copy) {
+            clipboardy.writeSync(url);
+        }
+        */
+    });
+
 } else if (argument && validator.isURL(argument)) {
     !opts.clear && console.log(`Creating clip from ${argument}`);
     fetch(`${endpoint}/includes/api?url=${argument}`).then((res) => {
