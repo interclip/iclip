@@ -5,6 +5,7 @@ const validator = require('validator');
 const qrcode = require('qrcode-terminal');
 const dashdash = require('dashdash');
 const clipboardy = require('clipboardy');
+const fs = require('fs')
 
 const fetch = require("node-fetch");
 
@@ -31,10 +32,15 @@ const options = [
         names: ['endpoint', 'e'],
         type: 'string',
         help: 'Change the base URL of Interclip.'
-    }
+    },
+    {
+        names: ['file', 'f'],
+        type: 'string',
+        help: 'A file to upload'
+    },
 ];
- 
-const parser = dashdash.createParser({options: options});
+
+const parser = dashdash.createParser({ options: options });
 try {
     var opts = parser.parse(process.argv);
 } catch (e) {
@@ -44,9 +50,11 @@ try {
 
 const endpoint = opts.endpoint || "https://interclip.app";
 
-!opts.clear && console.log(figlet.textSync(`Interclip`,  {horizontalLayout: 'full'}));
+!opts.clear && console.log(figlet.textSync(`Interclip`, { horizontalLayout: 'full' }));
 
-if (argument && validator.isURL(argument)) {
+if (argument && fs.existsSync(argument)) {
+    console.log("File!")
+} else if (argument && validator.isURL(argument)) {
     !opts.clear && console.log(`Creating clip from ${argument}`);
     fetch(`${endpoint}/includes/api?url=${argument}`).then((res) => {
         if (res.ok) {
