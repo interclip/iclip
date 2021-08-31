@@ -48,7 +48,7 @@ const endpoint = opts.endpoint || "https://interclip.app";
 
 if (argument && validator.isURL(argument)) {
     !opts.clear && console.log(`Creating clip from ${argument}`);
-    fetch(`${endpoint}/includes/api?url=${argument}`).then((res) => {
+    fetch(`${endpoint}/api/set?url=${argument}`).then((res) => {
         if (res.ok) {
             return res.json();
         } else {
@@ -67,7 +67,7 @@ if (argument && validator.isURL(argument)) {
     });
 } else if (argument && argument.length === 5) {
     !opts.clear && console.log(`Getting clip from code ${argument}`);
-    fetch(`${endpoint}/includes/get-api?code=${argument}`).then((res) => {
+    fetch(`${endpoint}/api/get?code=${argument}`).then((res) => {
         if (res.ok) {
             return res.json();
         } else {
