@@ -1,6 +1,6 @@
 {
     "name": "interclip",
-    "version": "0.0.5",
+    "version": "1.0.0",
     "description": "Interclip for the terminal",
     "repository": "https://github.com/interclip/cli",
     "main": "bin/index.js",
