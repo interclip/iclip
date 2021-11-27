@@ -3,9 +3,9 @@
     "version": "1.0.0",
     "description": "Interclip for the terminal",
     "repository": "https://github.com/interclip/cli",
-    "main": "bin/index.js",
+    "main": "dist/index.js",
     "bin": {
-        "iclip": "./bin/index.js"
+        "iclip": "./dist/cli.js"
     },
     "preferGlobal": true,
     "scripts": {

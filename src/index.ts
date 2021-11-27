@@ -1,97 +1,72 @@
-#!/usr/bin/env node
-
-import figlet from "figlet";
-import validator from "validator";
-import qrcode from "qrcode-terminal";
-import dashdash from "dashdash";
-import clipboardy from "clipboardy";
-
 import fetch from "node-fetch";
 
-const cliArguments = process.argv;
-const argument = cliArguments[2];
-
-const options = [
-  {
-    names: ["qrcode", "q"],
-    type: "bool",
-    help: "Print a QR code in every new clip.",
-  },
-  {
-    names: ["copy", "p"],
-    type: "bool",
-    help: "Copy the output to the clipboard.",
-  },
-  {
-    names: ["clear", "c"],
-    type: "bool",
-    help: "Make the output simple and clear.",
-  },
-  {
-    names: ["endpoint", "e"],
-    type: "string",
-    help: "Change the base URL of Interclip.",
-  },
-];
-
-const parser = dashdash.createParser({ options: options });
-const opts = parser.parse(process.argv);
-
-const endpoint: string = opts.endpoint || "https://interclip.app";
-
-!opts.clear &&
-  console.log(figlet.textSync(`Interclip`, { horizontalLayout: "full" }));
-
-if (argument && validator.isURL(argument)) {
-  !opts.clear && console.log(`Creating clip from ${argument}`);
-  fetch(`${endpoint}/api/set?url=${argument}`)
-    .then((res) => {
-      if (res.ok) {
-        return res.json();
-      } else {
-        return null;
-      }
-    })
-    .then((res: APIResponse | null) => {
-      if (res && res.status === "success") {
-        console.log(
-          opts.clear
-            ? `${argument} => ${res.result}`
-            : `Code: ${res.result} ${opts.copy ? "(copied)" : ""}`
-        );
-        if (opts.qrcode) {
-          qrcode.generate(`${endpoint}/${res.result}`);
-        }
-        opts.copy && clipboardy.writeSync(res.result);
-      } else {
-        console.log(`Error: ${res}`);
-      }
-    });
-} else if (argument && argument.length === 5) {
-  !opts.clear && console.log(`Getting clip from code ${argument}`);
-  fetch(`${endpoint}/api/get?code=${argument}`)
-    .then((res) => {
-      if (res.ok) {
-        return res.json();
-      } else {
-        return null;
-      }
-    })
-    .then((res: APIResponse | null) => {
-      if (res && res.status === "success") {
-        console.log(
-          opts.clear
-            ? `${argument} => ${res.result}`
-            : `URL: ${res.result} ${opts.copy ? "(copied)" : ""}`
-        );
-        if (opts.qrcode) {
-          qrcode.generate(`${argument}`);
-        }
-        opts.copy && clipboardy.writeSync(res.result);
-      } else {
-        console.log(`Error: ${res}`);
-      }
-    });
-} else {
-  console.log("Nothing to do!");
+interface APIResponse {
+  status: "error" | "success";
+  result: any;
 }
+
+interface Clip {
+  /**
+   * A unique identifier for the clip in the database
+   */
+  id: number;
+  /**
+   * A random 5 character long alpha-numeric code identifying the code
+   */
+  code: string;
+  /**
+   * The URL value of the clip
+   */
+  url: string;
+  /**
+   * A stringified DateTime object of the moment the clip was created
+   */
+  createdAt: string;
+  /**
+   * A stringified DateTime object of the moment the clip will expire
+   */
+  expiresAt: string | null;
+  /**
+   * An optional ID of the user who first created a clip from this `url`
+   */
+  ownerID: string | null;
+}
+
+interface ClipResponse extends APIResponse {
+  result: Clip;
+}
+
+export class APIError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "APIError";
+  }
+}
+
+/**
+ * Calls the set API to create a new clip from a link
+ * @param url the URL to create the clip from
+ */
+export const requestClip = async (
+  url: string
+): Promise<ClipResponse | void> => {
+  const clipResponse = await fetch(`/api/clip/set?url=${url}`);
+  if (!clipResponse.ok) throw new APIError(await clipResponse.text());
+  const clip: ClipResponse = await clipResponse.json();
+
+  return clip;
+};
+
+/**
+ * Calls the get API to get a clip by its corresponding code
+ * @param code the code of the clip
+ */
+export const getClip = async (
+  code: string
+): Promise<ClipResponse | void | null> => {
+  const clipResponse = await fetch(`/api/clip/get?code=${code}`);
+  if (clipResponse.status === 404) return null;
+  if (!clipResponse.ok) throw new APIError(await clipResponse.text());
+  const clip: ClipResponse = await clipResponse.json();
+  return clip;
+};
