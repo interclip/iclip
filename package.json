@@ -9,7 +9,11 @@
     },
     "preferGlobal": true,
     "scripts": {
-        "test": "echo \"Error: no test specified\" && exit 1"
+        "start": "nodemon --watch 'src/**/*.ts' --exec 'ts-node' src/index.ts",
+        "create": "npm run build && npm run test",
+        "build": "tsc -p .",
+        "local": "sudo npm i -g && pizza",
+        "refresh": "rm -rf ./node_modules ./package-lock.json && npm install"
     },
     "author": "Filip Troníček",
     "license": "MIT",
@@ -20,5 +24,16 @@
         "node-fetch": "^2.6.1",
         "qrcode-terminal": "^0.12.0",
         "validator": "^13.5.2"
+    },
+    "devDependencies": {
+        "@types/dashdash": "^1.14.1",
+        "@types/figlet": "^1.5.4",
+        "@types/node": "^16.11.10",
+        "@types/node-fetch": "^2.5.12",
+        "@types/qrcode-terminal": "^0.12.0",
+        "@types/validator": "^13.7.0",
+        "nodemon": "^2.0.15",
+        "ts-node": "^10.4.0",
+        "typescript": "^4.5.2"
     }
 }
