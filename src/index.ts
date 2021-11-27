@@ -1,40 +1,5 @@
 import fetch from "node-fetch";
-
-interface APIResponse {
-  status: "error" | "success";
-  result: any;
-}
-
-interface Clip {
-  /**
-   * A unique identifier for the clip in the database
-   */
-  id: number;
-  /**
-   * A random 5 character long alpha-numeric code identifying the code
-   */
-  code: string;
-  /**
-   * The URL value of the clip
-   */
-  url: string;
-  /**
-   * A stringified DateTime object of the moment the clip was created
-   */
-  createdAt: string;
-  /**
-   * A stringified DateTime object of the moment the clip will expire
-   */
-  expiresAt: string | null;
-  /**
-   * An optional ID of the user who first created a clip from this `url`
-   */
-  ownerID: string | null;
-}
-
-interface ClipResponse extends APIResponse {
-  result: Clip;
-}
+import { SetGetResponse } from "../types";
 
 export class APIError extends Error {
   constructor(message: string) {
@@ -49,10 +14,10 @@ export class APIError extends Error {
  */
 export const requestClip = async (
   url: string
-): Promise<ClipResponse | void> => {
+): Promise<SetGetResponse | void> => {
   const clipResponse = await fetch(`/api/clip/set?url=${url}`);
   if (!clipResponse.ok) throw new APIError(await clipResponse.text());
-  const clip: ClipResponse = await clipResponse.json();
+  const clip: SetGetResponse = await clipResponse.json();
 
   return clip;
 };
@@ -63,10 +28,10 @@ export const requestClip = async (
  */
 export const getClip = async (
   code: string
-): Promise<ClipResponse | void | null> => {
+): Promise<SetGetResponse | void | null> => {
   const clipResponse = await fetch(`/api/clip/get?code=${code}`);
   if (clipResponse.status === 404) return null;
   if (!clipResponse.ok) throw new APIError(await clipResponse.text());
-  const clip: ClipResponse = await clipResponse.json();
+  const clip: SetGetResponse = await clipResponse.json();
   return clip;
 };

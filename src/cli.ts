@@ -5,6 +5,7 @@ import validator from "validator";
 import qrcode from "qrcode-terminal";
 import dashdash from "dashdash";
 import clipboardy from "clipboardy";
+import { SetGetResponse } from "../types";
 
 import fetch from "node-fetch";
 
@@ -52,7 +53,7 @@ if (argument && validator.isURL(argument)) {
         return null;
       }
     })
-    .then((res: APIResponse | null) => {
+    .then((res: SetGetResponse | null) => {
       if (res && res.status === "success") {
         console.log(
           opts.clear
@@ -77,7 +78,7 @@ if (argument && validator.isURL(argument)) {
         return null;
       }
     })
-    .then((res: APIResponse | null) => {
+    .then((res: SetGetResponse | null) => {
       if (res && res.status === "success") {
         console.log(
           opts.clear
