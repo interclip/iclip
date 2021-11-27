@@ -9,10 +9,10 @@
     },
     "preferGlobal": true,
     "scripts": {
-        "start": "nodemon --watch 'src/**/*.ts' --exec 'ts-node' src/index.ts",
+        "watch": "yarn tsc --watch",
         "create": "npm run build && npm run test",
         "build": "tsc -p .",
-        "local": "sudo npm i -g && pizza",
+        "local": "npm i -g && iclip https://interclip.app/about/",
         "refresh": "rm -rf ./node_modules ./package-lock.json && npm install"
     },
     "author": "Filip Troníček",
