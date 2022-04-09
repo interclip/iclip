@@ -52,10 +52,6 @@ const opts = parser.parse(process.argv);
 const endpoint: string = opts.endpoint || "https://beta.interclip.app";
 const filesEndpoint: string = opts.filesEndpoint || "https://files.interclip.app";
 
-!opts.clear &&
-  console.log(figlet.textSync(`Interclip`, { horizontalLayout: "full" }));
-
-
 if (argument && fs.existsSync(argument)) {
   const buffer = fs.readFileSync(argument);
 
