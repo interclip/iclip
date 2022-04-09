@@ -6,7 +6,7 @@ import qrcode from "qrcode-terminal";
 import dashdash from "dashdash";
 import clipboardy from "clipboardy";
 import fs from "node:fs";
-import path from "node:path";
+import path, { format } from "node:path";
 import FormData from "form-data";
 import type { S3 } from 'aws-sdk';
 import mime from "mime-types";
@@ -65,7 +65,7 @@ if (argument && fs.existsSync(argument)) {
   } else {
     // Output the human readable file size
     console.log(
-      `File size: ${(fs.statSync(argument).size / 1000).toFixed(2)} KB`
+      `File size: ${formatBytes(fs.statSync(argument).size)}`
     );
   }
 
