@@ -1,5 +1,4 @@
 import fetch from "node-fetch";
-import { SetGetResponse } from "../types";
 
 export class APIError extends Error {
   constructor(message: string) {
@@ -13,11 +12,11 @@ export class APIError extends Error {
  * @param url the URL to create the clip from
  */
 export const requestClip = async (
-  url: string
-): Promise<SetGetResponse | void> => {
-  const clipResponse = await fetch(`/api/clip/set?url=${url}`);
+  url: string, endpoint: string
+): Promise<ClipData> => {
+  const clipResponse = await fetch(`${endpoint}/api/clip/set?url=${url}`);
   if (!clipResponse.ok) throw new APIError(await clipResponse.text());
-  const clip: SetGetResponse = await clipResponse.json();
+  const clip: ClipData = await clipResponse.json();
 
   return clip;
 };
@@ -27,11 +26,12 @@ export const requestClip = async (
  * @param code the code of the clip
  */
 export const getClip = async (
-  code: string
-): Promise<SetGetResponse | void | null> => {
-  const clipResponse = await fetch(`/api/clip/get?code=${code}`);
+  code: string,
+  endpoint: string
+): Promise<ClipData | null> => {
+  const clipResponse = await fetch(`${endpoint}/api/clip/get?code=${code}`);
   if (clipResponse.status === 404) return null;
   if (!clipResponse.ok) throw new APIError(await clipResponse.text());
-  const clip: SetGetResponse = await clipResponse.json();
+  const clip: ClipData = await clipResponse.json();
   return clip;
 };
