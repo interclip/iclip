@@ -26,7 +26,7 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
     - name: Install NPM dependencies
-      run: npm ci
+      run: yarn
     - name: Install iclip-cli locally
       run: npm i -g .
     - name: Test code to URL
