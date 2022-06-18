@@ -25,15 +25,9 @@ iclip https://github.com/aperta-principium/Interclip
 iclip sgejf
 ```
 ### Options
-#### --clear (-c)
-Displays the output in a clean manner, for example:
-```bash
-iclip tasks -c
-```
-yields
-```bash
-tasks => https://taskord.com/
-```
+#### --verbose (-c)
+Displays verbose output for debugging and more information in general.
+
 #### --copy (-p)
 Copy the result of the command
 ##### Example command 
