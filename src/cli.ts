@@ -111,7 +111,7 @@ if (argument && fs.existsSync(argument)) {
         }
 
         const clipData = await requestClip(fileURL, endpoint);
-        
+
         if (clipData.status === "error") {
           console.error(`Error: ${clipData.result}`);
           process.exit(-1);
@@ -123,8 +123,14 @@ if (argument && fs.existsSync(argument)) {
             small: true,
           });
         }
-        if (opts.copy) {
-          clipboardy.writeSync(miniCode);
+        
+        try {
+          if (opts.copy) {
+            log('Copying code');
+            clipboardy.writeSync(miniCode);
+          }
+        } catch (e) {
+          console.error("Failed to copy code");
         }
 
         console.log(`Code: ${miniCode}`);
@@ -156,15 +162,24 @@ if (argument && fs.existsSync(argument)) {
     })
     .then((res: ClipData | null) => {
       if (res && res.status === "success") {
+        const miniCode = res.result.code.slice(0, res.result.hashLength);
+
         console.log(
           !opts.verbose
-            ? `${argument} => ${res.result}`
-            : `Code: ${res.result} ${opts.copy ? "(copied)" : ""}`
+            ? `${argument} => ${miniCode}`
+            : `Code: ${miniCode} ${opts.copy ? "(copied)" : ""}`
         );
         if (opts.qrcode) {
           qrcode.generate(`${endpoint}/${res.result.code}`);
         }
-        opts.copy && clipboardy.writeSync(res.result.code);
+        try {
+          if (opts.copy) {
+            log('Copying code');
+            clipboardy.writeSync(miniCode);
+          }
+        } catch (e) {
+          console.error("Failed to copy code");
+        }
       } else {
         console.log(`Error: ${res}`);
       }
@@ -181,17 +196,25 @@ if (argument && fs.existsSync(argument)) {
     })
     .then((res: ClipData | null) => {
       if (res && res.status === "success") {
+        const { url } = res.result;
         console.log(
           !opts.verbose
-            ? `${argument} => ${res.result}`
-            : `URL: ${res.result} ${opts.copy ? "(copied)" : ""}`
+            ? `${argument} => ${url}`
+            : `URL: ${url} ${opts.copy ? "(copied)" : ""}`
         );
         if (opts.qrcode) {
           qrcode.generate(`${argument}`);
         }
-        opts.copy && clipboardy.writeSync(res.result.url);
+        try {
+          if (opts.copy) {
+            log('Copying code');
+            clipboardy.writeSync(url);
+          }
+        } catch (e) {
+          console.error("Failed to copy URL");
+        }
       } else {
-        console.error(`Error: ${res}`);
+        console.error(`Error: ${res?.result}`);
       }
     });
 } else {
