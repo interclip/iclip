@@ -1,4 +1,4 @@
-# iclip-cli
+# `iclip`
 Interclip for your terminal!
 
 ![Screenshot](https://user-images.githubusercontent.com/29888641/114844900-89c94600-9ddb-11eb-87ce-17cc2cb811e9.png)
