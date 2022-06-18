@@ -1,12 +1,11 @@
 #!/usr/bin/env node
 
-import figlet from "figlet";
 import validator from "validator";
 import qrcode from "qrcode-terminal";
 import dashdash from "dashdash";
 import clipboardy from "clipboardy";
 import fs from "node:fs";
-import path, { format } from "node:path";
+import path from "node:path";
 import FormData from "form-data";
 import type { S3 } from 'aws-sdk';
 import mime from "mime-types";
@@ -30,9 +29,9 @@ const options = [
     help: "Copy the output to the clipboard.",
   },
   {
-    names: ["clear", "c"],
+    names: ["verbose", "v"],
     type: "bool",
-    help: "Make the output simple and clear.",
+    env: 'ICLIP_VERBOSE',
   },
   {
     names: ["endpoint", "e"],
@@ -46,6 +45,12 @@ const options = [
   },
 ];
 
+const log = (msg: string) => {
+  if (opts.verbose) {
+    console.log(`${new Date().toISOString()}: ${msg}`);
+  }
+}
+
 const parser = dashdash.createParser({ options: options });
 const opts = parser.parse(process.argv);
 
@@ -53,6 +58,7 @@ const endpoint: string = opts.endpoint || "https://beta.interclip.app";
 const filesEndpoint: string = opts.filesEndpoint || "https://files.interclip.app";
 
 if (argument && fs.existsSync(argument)) {
+  log(`Input: ${argument}, File: ${fs.existsSync(argument)}`)
   const buffer = fs.readFileSync(argument);
 
   const fileName = path.basename(argument);
@@ -64,7 +70,7 @@ if (argument && fs.existsSync(argument)) {
     process.exit(1);
   } else {
     // Output the human readable file size
-    console.log(
+    log(
       `File size: ${formatBytes(fs.statSync(argument).size)}`
     );
   }
@@ -97,8 +103,12 @@ if (argument && fs.existsSync(argument)) {
         body: formData,
       });
       if (upload.ok) {
-        const fileURL = `${filesEndpoint}/${fields.key}`;;
-        console.log(`File uploaded to ${fileURL}`);
+        const fileURL = `${filesEndpoint}/${fields.key}`;
+        if (opts.verbose) {
+          console.log(`File uploaded to ${fileURL}`);
+        } else {
+          console.log(fileURL);
+        }
 
         const clipData = await requestClip(fileURL, endpoint);
         
@@ -135,7 +145,7 @@ if (argument && fs.existsSync(argument)) {
       }
     })
 } else if (argument && validator.isURL(argument)) {
-  !opts.clear && console.log(`Creating clip from ${argument}`);
+  log(`Creating clip from ${argument}`);
   fetch(`${endpoint}/api/clip/set?url=${argument}`)
     .then((res) => {
       if (res.ok) {
@@ -147,7 +157,7 @@ if (argument && fs.existsSync(argument)) {
     .then((res: ClipData | null) => {
       if (res && res.status === "success") {
         console.log(
-          opts.clear
+          !opts.verbose
             ? `${argument} => ${res.result}`
             : `Code: ${res.result} ${opts.copy ? "(copied)" : ""}`
         );
@@ -160,7 +170,7 @@ if (argument && fs.existsSync(argument)) {
       }
     });
 } else if (argument && argument.length === 5) {
-  !opts.clear && console.log(`Getting clip from code ${argument}`);
+  log(`Getting clip from code ${argument}`);
   fetch(`${endpoint}/api/clip/get?code=${argument}`)
     .then((res) => {
       if (res.ok) {
@@ -172,7 +182,7 @@ if (argument && fs.existsSync(argument)) {
     .then((res: ClipData | null) => {
       if (res && res.status === "success") {
         console.log(
-          opts.clear
+          !opts.verbose
             ? `${argument} => ${res.result}`
             : `URL: ${res.result} ${opts.copy ? "(copied)" : ""}`
         );
@@ -181,9 +191,9 @@ if (argument && fs.existsSync(argument)) {
         }
         opts.copy && clipboardy.writeSync(res.result.url);
       } else {
-        console.log(`Error: ${res}`);
+        console.error(`Error: ${res}`);
       }
     });
 } else {
-  console.log("Nothing to do!");
+  console.warn("Nothing to do!");
 }
