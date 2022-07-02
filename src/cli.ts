@@ -7,7 +7,7 @@ import clipboardy from "clipboardy";
 import fs from "node:fs";
 import path from "node:path";
 import FormData from "form-data";
-import type { S3 } from 'aws-sdk';
+import type { S3 } from "aws-sdk";
 import mime from "mime-types";
 import { convertXML } from "simple-xml-to-json";
 import fetch from "node-fetch";
@@ -31,7 +31,7 @@ const options = [
   {
     names: ["verbose", "v"],
     type: "bool",
-    env: 'ICLIP_VERBOSE',
+    env: "ICLIP_VERBOSE",
   },
   {
     names: ["endpoint", "e"],
@@ -49,16 +49,17 @@ const log = (msg: string) => {
   if (opts.verbose) {
     console.log(`${new Date().toISOString()}: ${msg}`);
   }
-}
+};
 
 const parser = dashdash.createParser({ options: options });
 const opts = parser.parse(process.argv);
 
 const endpoint: string = opts.endpoint || "https://beta.interclip.app";
-const filesEndpoint: string = opts.filesEndpoint || "https://files.interclip.app";
+const filesEndpoint: string =
+  opts.filesEndpoint || "https://files.interclip.app";
 
 if (argument && fs.existsSync(argument)) {
-  log(`Input: ${argument}, File: ${fs.existsSync(argument)}`)
+  log(`Input: ${argument}, File: ${fs.existsSync(argument)}`);
   const buffer = fs.readFileSync(argument);
 
   const fileName = path.basename(argument);
@@ -70,9 +71,7 @@ if (argument && fs.existsSync(argument)) {
     process.exit(1);
   } else {
     // Output the human readable file size
-    log(
-      `File size: ${formatBytes(fs.statSync(argument).size)}`
-    );
+    log(`File size: ${formatBytes(fs.statSync(argument).size)}`);
   }
 
   fetch(`${endpoint}/api/uploadFile?name=${fileName}&type=${fileType}`)
@@ -80,9 +79,9 @@ if (argument && fs.existsSync(argument)) {
       if (!response.ok) {
         switch (response.status) {
           case 404:
-            throw new APIError('API Endpoint not found');
+            throw new APIError("API Endpoint not found");
           case 500:
-            throw new APIError('Generic fail');
+            throw new APIError("Generic fail");
           case 503:
             throw new APIError((await response.json()).result);
         }
@@ -116,17 +115,20 @@ if (argument && fs.existsSync(argument)) {
           console.error(`Error: ${clipData.result}`);
           process.exit(-1);
         }
-        const miniCode = clipData.result.code.slice(0, clipData.result.hashLength);
+        const miniCode = clipData.result.code.slice(
+          0,
+          clipData.result.hashLength
+        );
 
         if (opts.qrcode) {
           qrcode.generate(miniCode, {
             small: true,
           });
         }
-        
+
         try {
           if (opts.copy) {
-            log('Copying code');
+            log("Copying code");
             clipboardy.writeSync(miniCode);
           }
         } catch (e) {
@@ -140,16 +142,17 @@ if (argument && fs.existsSync(argument)) {
         const erorrMsg = jsonResponse.Error.children[0].Code.content;
 
         switch (erorrMsg) {
-          case 'EntityTooLarge':
-            const fileSize = jsonResponse.Error.children[2].ProposedSize.content;
+          case "EntityTooLarge":
+            const fileSize =
+              jsonResponse.Error.children[2].ProposedSize.content;
             throw new APIError(`File too large (${formatBytes(fileSize)})`);
-          case 'AccessDenied':
-            throw new APIError('Access Denied to the bucket');
+          case "AccessDenied":
+            throw new APIError("Access Denied to the bucket");
           default:
-            throw new APIError('Upload failed.');
+            throw new APIError("Upload failed.");
         }
       }
-    })
+    });
 } else if (argument && validator.isURL(argument)) {
   log(`Creating clip from ${argument}`);
   fetch(`${endpoint}/api/clip/set?url=${argument}`)
@@ -174,7 +177,7 @@ if (argument && fs.existsSync(argument)) {
         }
         try {
           if (opts.copy) {
-            log('Copying code');
+            log("Copying code");
             clipboardy.writeSync(miniCode);
           }
         } catch (e) {
@@ -207,7 +210,7 @@ if (argument && fs.existsSync(argument)) {
         }
         try {
           if (opts.copy) {
-            log('Copying code');
+            log("Copying code");
             clipboardy.writeSync(url);
           }
         } catch (e) {
@@ -220,3 +223,4 @@ if (argument && fs.existsSync(argument)) {
 } else {
   console.warn("Nothing to do!");
 }
+
