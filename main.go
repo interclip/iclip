@@ -70,6 +70,13 @@ func detectInputAndRun(cmd *cobra.Command, args []string) {
 		if fileURL != "" {
 			if uploadOnly {
 				exit(fileURL)
+			} else {
+				clipURL, err := createClip(fileURL)
+				if err != nil {
+					fmt.Println("Error creating clip for file:", err)
+					os.Exit(1)
+				}
+				exit(clipURL)
 			}
 		} else {
 			os.Exit(1)
