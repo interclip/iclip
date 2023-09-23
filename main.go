@@ -10,21 +10,60 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/atotto/clipboard"
 	"github.com/spf13/cobra"
 )
 
 var verbose bool
+var uploadOnly bool
+var copyOnCreate bool
 
 func main() {
 	var rootCmd = &cobra.Command{
 		Use:   "<path_to_file>",
 		Short: "Upload a file to Interclip",
 		Args:  cobra.ExactArgs(1),
-		Run:   uploadFile,
+		Run:   detectInputAndRun,
 	}
 
 	rootCmd.Flags().BoolVarP(&verbose, "verbose", "v", false, "verbose output")
+	rootCmd.Flags().BoolVarP(&uploadOnly, "upload-only", "u", false, "only upload the file, don't create a clip")
+	rootCmd.Flags().BoolVarP(&copyOnCreate, "copy-on-create", "c", false, "copy the result to clipboard")
+
 	rootCmd.Execute()
+}
+
+func fileExists(filename string) bool {
+	_, err := os.Stat(filename)
+	if os.IsNotExist(err) {
+		return false
+	}
+	return err == nil
+}
+
+func exit(result string) {
+	if copyOnCreate {
+		clipboard.WriteAll(result)
+	}
+	fmt.Println(result)
+	os.Exit(0)
+}
+
+func detectInputAndRun(cmd *cobra.Command, args []string) {
+	argument := args[0]
+	if fileExists(argument) {
+		fileURL := uploadFile(argument)
+		if fileURL != "" {
+			if uploadOnly {
+				exit(fileURL)
+			}
+		} else {
+			os.Exit(1)
+		}
+	}
+
+	fmt.Println("Failed to detect input type. Please use a URL, clip code or a file path.")
+	os.Exit(1)
 }
 
 func detectMIMEType(file *os.File) string {
@@ -39,20 +78,18 @@ func detectMIMEType(file *os.File) string {
 	return http.DetectContentType(buffer)
 }
 
-func uploadFile(cmd *cobra.Command, args []string) {
-	filePath := args[0]
-
+func uploadFile(filePath string) string {
 	file, err := os.Open(filePath)
 	if err != nil {
 		fmt.Println("Error opening file:", err)
-		return
+		return ""
 	}
 	defer file.Close()
 
 	fileInfo, err := file.Stat()
 	if err != nil {
 		fmt.Println("Error fetching file info:", err)
-		return
+		return ""
 	}
 
 	mimeType := detectMIMEType(file)
@@ -66,7 +103,7 @@ func uploadFile(cmd *cobra.Command, args []string) {
 	req, err := http.NewRequest(http.MethodGet, urlToFetch, nil)
 	if err != nil {
 		fmt.Println("Error creating request:", err)
-		return
+		return ""
 	}
 
 	q := req.URL.Query()
@@ -78,13 +115,13 @@ func uploadFile(cmd *cobra.Command, args []string) {
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		fmt.Println("Error fetching presigned URL:", err)
-		return
+		return ""
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
 		fmt.Println("Failed to get presigned URL:", resp.Status)
-		return
+		return ""
 	}
 
 	var presignedData struct {
@@ -93,7 +130,7 @@ func uploadFile(cmd *cobra.Command, args []string) {
 	}
 	if err := json.NewDecoder(resp.Body).Decode(&presignedData); err != nil {
 		fmt.Println("Error decoding response:", err)
-		return
+		return ""
 	}
 
 	if verbose {
@@ -111,7 +148,7 @@ func uploadFile(cmd *cobra.Command, args []string) {
 	part, err := writer.CreateFormFile("file", filepath.Base(filePath))
 	if err != nil {
 		fmt.Println("Error creating form file:", err)
-		return
+		return ""
 	}
 	io.Copy(part, file)
 
@@ -120,24 +157,24 @@ func uploadFile(cmd *cobra.Command, args []string) {
 	uploadReq, err := http.NewRequest(http.MethodPost, presignedData.URL, &b)
 	if err != nil {
 		fmt.Println("Error creating upload request:", err)
-		return
+		return ""
 	}
 	uploadReq.Header.Set("Content-Type", writer.FormDataContentType())
 
 	uploadResp, err := http.DefaultClient.Do(uploadReq)
 	if err != nil {
 		fmt.Println("Error uploading file:", err)
-		return
+		return ""
 	}
 	defer uploadResp.Body.Close()
 
 	if uploadResp.StatusCode >= 400 {
 		fmt.Println("Upload failed with HTTP", uploadResp.Status)
-		return
+		return ""
 	}
 
 	if verbose {
 		fmt.Println("File uploaded successfully!")
 	}
-	fmt.Printf("https://files.interclip.app/%s\n", presignedData.Fields["key"])
+	return fmt.Sprintf("https://files.interclip.app/%s", presignedData.Fields["key"])
 }
