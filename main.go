@@ -10,6 +10,7 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
+	"regexp"
 
 	"github.com/atotto/clipboard"
 	"github.com/spf13/cobra"
@@ -47,6 +48,11 @@ func isURL(str string) bool {
 	return err == nil && u.Scheme != "" && u.Host != ""
 }
 
+func isClipCode(s string) bool {
+	match, _ := regexp.MatchString(`(?i)^[a-z0-9]{5}$`, s)
+	return match
+}
+
 func exit(result string) {
 	fmt.Print(result)
 	if copyOnCreate {
@@ -75,6 +81,13 @@ func detectInputAndRun(cmd *cobra.Command, args []string) {
 			os.Exit(1)
 		}
 		exit(clipURL)
+	} else if isClipCode(argument) {
+		clipURL, err := retrieveClip(argument)
+		if err != nil {
+			fmt.Println("Error retrieving clip:", err)
+			os.Exit(1)
+		}
+		exit(clipURL)
 	}
 
 	fmt.Println("Failed to detect input type. Please use a URL, clip code or a file path.")
@@ -93,6 +106,41 @@ func createClip(urlToSubmit string) (string, error) {
 	data.Set("url", urlToSubmit)
 
 	resp, err := http.PostForm(apiEndpoint, data)
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+
+	respBody, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return "", err
+	}
+
+	var response Response
+	err = json.Unmarshal(respBody, &response)
+	if err != nil {
+		return "", err
+	}
+
+	if response.Status == "success" {
+		return response.Result, nil
+	}
+
+	return "", fmt.Errorf("API response: %s", response.Result)
+}
+
+func retrieveClip(code string) (string, error) {
+	apiEndpoint := "https://interclip.app/api/get"
+
+	u, err := url.Parse(apiEndpoint)
+	if err != nil {
+		return "", err
+	}
+	q := u.Query()
+	q.Set("code", code)
+	u.RawQuery = q.Encode()
+
+	resp, err := http.Get(u.String())
 	if err != nil {
 		return "", err
 	}
