@@ -22,10 +22,15 @@ var copyOnCreate bool
 
 func main() {
 	var rootCmd = &cobra.Command{
-		Use:   "<path_to_file>",
-		Short: "Upload a file to Interclip",
-		Args:  cobra.ExactArgs(1),
-		Run:   detectInputAndRun,
+		Use:   "<input>",
+		Short: "Interclip for the command line",
+		Long: `iclip - Interclip from the command line
+
+The interface of the CLI is just central command (iclip), which takes one argument as input.
+The input can be either URL (creates a clip), a clip code (retrieves a clip) or a file path (uploads the file and creates a clip).
+`,
+		Args: cobra.ExactArgs(1),
+		Run:  detectInputAndRun,
 	}
 
 	rootCmd.Flags().BoolVarP(&verbose, "verbose", "v", false, "verbose output")
