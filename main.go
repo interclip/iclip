@@ -7,6 +7,7 @@ import (
 	"io"
 	"mime/multipart"
 	"net/http"
+	"net/url"
 	"os"
 	"path/filepath"
 
@@ -41,11 +42,18 @@ func fileExists(filename string) bool {
 	return err == nil
 }
 
+func isURL(str string) bool {
+	u, err := url.Parse(str)
+	return err == nil && u.Scheme != "" && u.Host != ""
+}
+
 func exit(result string) {
+	fmt.Print(result)
 	if copyOnCreate {
 		clipboard.WriteAll(result)
+		fmt.Print(" (copied to clipboard)")
 	}
-	fmt.Println(result)
+	fmt.Println()
 	os.Exit(0)
 }
 
@@ -60,10 +68,52 @@ func detectInputAndRun(cmd *cobra.Command, args []string) {
 		} else {
 			os.Exit(1)
 		}
+	} else if isURL(argument) {
+		clipURL, err := createClip(argument)
+		if err != nil {
+			fmt.Println("Error creating clip:", err)
+			os.Exit(1)
+		}
+		exit(clipURL)
 	}
 
 	fmt.Println("Failed to detect input type. Please use a URL, clip code or a file path.")
 	os.Exit(1)
+}
+
+type Response struct {
+	Status string `json:"status"`
+	Result string `json:"result"`
+}
+
+func createClip(urlToSubmit string) (string, error) {
+	apiEndpoint := "https://interclip.app/api/set"
+
+	data := url.Values{}
+	data.Set("url", urlToSubmit)
+
+	resp, err := http.PostForm(apiEndpoint, data)
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+
+	respBody, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return "", err
+	}
+
+	var response Response
+	err = json.Unmarshal(respBody, &response)
+	if err != nil {
+		return "", err
+	}
+
+	if response.Status == "success" {
+		return response.Result, nil
+	}
+
+	return "", fmt.Errorf("API response: %s", response.Result)
 }
 
 func detectMIMEType(file *os.File) string {
