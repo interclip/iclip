@@ -1,4 +1,4 @@
-module github.com/interclip/cli
+module github.com/interclip/iclip
 
 go 1.21.1
 
