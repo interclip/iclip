@@ -1,6 +1,6 @@
 module github.com/interclip/iclip
 
-go 1.21.1
+go 1.21
 
 require (
 	github.com/atotto/clipboard v0.1.4
