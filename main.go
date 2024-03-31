@@ -22,7 +22,7 @@ var copyOnCreate bool
 
 func main() {
 	var rootCmd = &cobra.Command{
-		Use:   "<input>",
+		Use:   "<url | code | file path>",
 		Short: "Interclip for the command line",
 		Long: `iclip - Interclip from the command line
 
@@ -35,7 +35,7 @@ The input can be either URL (creates a clip), a clip code (retrieves a clip) or 
 
 	rootCmd.Flags().BoolVarP(&verbose, "verbose", "v", false, "verbose output")
 	rootCmd.Flags().BoolVarP(&uploadOnly, "upload-only", "u", false, "only upload the file, don't create a clip")
-	rootCmd.Flags().BoolVarP(&copyOnCreate, "copy-on-create", "c", false, "copy the result to clipboard")
+	rootCmd.Flags().BoolVarP(&copyOnCreate, "copy", "c", false, "copy the result to clipboard")
 
 	rootCmd.Execute()
 }
